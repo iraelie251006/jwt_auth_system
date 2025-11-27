@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
     "url": "https://github.com/iraelie251006/jwt_auth_system/issues"
   },
   "homepage": "https://github.com/iraelie251006/jwt_auth_system#readme",
+  "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
