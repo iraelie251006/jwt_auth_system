@@ -1,8 +1,11 @@
 import express from 'express';
+import connectDB from './config/db.js';
 
 const app = express();
 
 app.use(express.json())
+
+connectDB()
 
 app.get('/', (req, res) => {
   res.send('JWT Auth API running');
