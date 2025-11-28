@@ -99,29 +99,56 @@ authRouter.post("/refresh", async (req, res) => {
     try {
       decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
-      return res.status(401).json({ message: 'Invalid or expired refresh token' });
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired refresh token" });
     }
 
     const tokenHash = hashToken(token);
-    const doc = await RefreshToken.findOne({tokenHash, jti: decoded.jti}).populate('user');
+    const doc = await RefreshToken.findOne({
+      tokenHash,
+      jti: decoded.jti,
+    }).populate("user");
 
     if (!doc) {
-      return res.status(401).json({ message: 'Refresh token not recognized' });
+      return res.status(401).json({ message: "Refresh token not recognized" });
     }
 
     if (doc.revokedAt) {
-      return res.status(401).json({ message: 'Refresh token has been revoked' });
+      return res
+        .status(401)
+        .json({ message: "Refresh token has been revoked" });
     }
 
     if (doc.expiredAt < new Date()) {
-      return res.status(401).json({ message: 'Refresh token has expired' });
+      return res.status(401).json({ message: "Refresh token has expired" });
     }
 
     const result = await rotateRefreshToken(req, res, doc.user, doc);
 
     return res.json({ accessToken: result.accessToken });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+authRouter.post("/logout", async (req, res) => {
+  try {
+    const token = req.cookies?.refresh_token;
+
+    if (token) {
+      const tokenHash = hashToken(token);
+      const doc = await RefreshToken.findOne({ tokenHash });
+
+      if (doc && !doc.revokedAt) {
+        doc.revokedAt = new Date();
+        await doc.save();
+      }
+    }
+    res.clearCookie("refresh_token", { path: "/api/auth/refresh" });
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
