@@ -52,6 +52,13 @@ authRouter.post("/login", async (req, res) => {
     const payload = { id: user._id, email: user.email };
     const token = jwt.sign(payload, SECRET, { expiresIn: "15m" });
 
+    res.cookie('access-token', token, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production'
+    })
+
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
